@@ -22,7 +22,7 @@ function drupal_task_menu() {
     $items = array();
 
     $items['drupal_task'] = array(
-        'title' => t('Drupal Task'),
+        'title' => 'Drupal Task',
         'page callback' => 'drupal_task_intro',
         'access callback' => TRUE,
         'expanded' => TRUE,
@@ -30,7 +30,7 @@ function drupal_task_menu() {
     );
 
     $items['drupal_task/import_tweets'] = array(
-        'title' => t('Import tweets'),
+        'title' => 'Import tweets',
         'page callback' => 'drupal_get_form',
         'page arguments' => array('drupal_task_form'),
         'access callback' => TRUE,
@@ -45,7 +45,7 @@ function drupal_task_menu() {
 
 
     $items['drupal_task/migrate'] = array(
-        'title' => t('Migrate tweets to nodes'),
+        'title' => 'Migrate tweets to nodes',
         'page callback' => 'drupal_get_form',
         'page arguments' => array('drupal_task_migrate_form'),
         'access callback' => TRUE,
@@ -54,31 +54,10 @@ function drupal_task_menu() {
     );
 
     $items['tweets-list'] = array(
-        'title' => t('Tweets List'),
+        'title' => 'Tweets List',
         'access callback' => FALSE,
         'expanded' => TRUE,
         'weight' => 30
-    );
-
-    $items['drupal_task/get_drush_make_script'] = array(
-        'title' => t('Get drush make script'),
-        'access callback' => TRUE,
-        'expanded' => TRUE,
-        'weight' => 40
-    );
-
-    $items['drupal_task/get_installation_profile'] = array(
-        'title' => t('Get installation profile'),
-        'access callback' => TRUE,
-        'expanded' => TRUE,
-        'weight' => 50
-    );
-
-    $items['drupal_task/get_bash_script'] = array(
-        'title' => t('Get bash script'),
-        'access callback' => TRUE,
-        'expanded' => TRUE,
-        'weight' => 60
     );
 
 
@@ -119,7 +98,8 @@ function drupal_task_migrate_form_submit() {
             $operations[] = array('drupal_task_merge_tweet', array($data));
         }
 
-        drupal_set_message(t('There are ' . $total_results . ' tweets merged'));
+
+        drupal_set_message(t('There are @total_results tweets merged'), array('@total_results' => $total_results));
         $batch = array(
             'operations' => $operations,
             'finished' => 'drupal_task_merge_batch_finished',
@@ -146,7 +126,7 @@ function drupal_task_merge_tweet($data) {
         $file = file_save_data($image, 'public://' . $filename, FILE_EXISTS_RENAME);
 
         require_once DRUPAL_ROOT . '/' . variable_get('password_inc', 'includes/password.inc');
-        $account = new StdClass();
+        $account = new stdClass();
         $account->is_new = TRUE;
         $account->status = TRUE;
         $account->name = $data->user_screen_name;
@@ -264,7 +244,7 @@ function drupal_task_form_submit($form, &$form_state) {
         }
 
         if ($total_results > 0) {
-            drupal_set_message(t('There are ' . $total_results . ' new tweets found'));
+            drupal_set_message(t('There are @total_results new tweets found'), array('@total_results' => $total_results));
             $batch = array(
                 'operations' => $operations,
                 'finished' => 'drupal_task_batch_finished',
@@ -332,7 +312,7 @@ function drupal_task_batch_finished($success, $results, $operations) {
         )));
     }
     else {
-        drupal_set_message('An error has occurred', 'error');
+        drupal_set_message(t('An error has occurred'), 'error');
     }
 }
 
@@ -363,12 +343,9 @@ function drupal_task_intro() {
                  Wrap everything into an installation profile<br/>
                  Create a bash script for site installation. It should 1) run drush make 2) create db 3) install profile<br/>');
 
-    $list[] = l(t('Import tweets with "drupal" keyword '), 'drupal_task/import_tweets');
+    $list[] = l(t('Import tweets with "drupal" keyword'), 'drupal_task/import_tweets');
     $list[] = l(t('Migrate tweets to nodes'), 'drupal_task/migrate');
     $list[] = l(t('View current Tweet list'), 'drupal_task/tweet-list');
-    $list[] = l(t('Get drush make script'), 'drupal_task/get_drush_make_script');
-    $list[] = l(t('Get installation profile'), 'drupal_task/get_installation_profile');
-    $list[] = l(t('Get bash script'), 'drupal_task/get_bash_script');
 
     $variables['items'] = $list;
     $variables['type'] = 'ul';
