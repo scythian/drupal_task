@@ -326,12 +326,25 @@ function _drupal_task_get_http_requests() {
  */
 function drupal_task_batch_finished($success, $results, $operations) {
     if ($success) {
-        drupal_set_message(t('@count results processed in @requests HTTP requests.', array('@count' => count($results), '@requests' => _batch_example_get_http_requests())));
+        drupal_set_message(t('@count results processed in @requests HTTP requests.', array('@count' => count($results), '@requests' => drupal_task_get_http_requests())));
     }
     else {
         drupal_set_message('An error has occurred', 'error');
     }
 }
+
+/**
+ * Utility function to count the HTTP requests in a session variable.
+ *
+ * @return int
+ *   Number of requests.
+ */
+function drupal_task_get_http_requests() {
+    return !empty($_SESSION['http_request_count']) ? $_SESSION['http_request_count'] : 0;
+}
+/**
+ * @} End of "defgroup batch_example".
+ */
 
 
 
