@@ -19,175 +19,175 @@ define('ACCESS_TOKEN_SECRET', '2UeQDVZMEo0IRKJ4SU83qzVqAIhV458ChYX9QiPYs0BHu');
  * Implements hook_menu().
  */
 function drupal_task_menu() {
-  $items = array();
+    $items = array();
 
-  $items['drupal_task'] = array(
-    'title' => t('Drupal Task'),
-    'page callback' => 'drupal_task_intro',
-    'access callback' => TRUE,
-    'expanded' => TRUE,
-    'weight' => -50
-  );
+    $items['drupal_task'] = array(
+        'title' => t('Drupal Task'),
+        'page callback' => 'drupal_task_intro',
+        'access callback' => TRUE,
+        'expanded' => TRUE,
+        'weight' => -50
+    );
 
-  $items['drupal_task/import_tweets'] = array(
-    'title' => t('Import tweets'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('drupal_task_form'),
-    'access callback' => TRUE,
-    'weight' => 0
-  );
+    $items['drupal_task/import_tweets'] = array(
+        'title' => t('Import tweets'),
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('drupal_task_form'),
+        'access callback' => TRUE,
+        'weight' => 0
+    );
 
-  $items['drupal_task/tweet-list'] = array(
-    'title' => 'View current Tweet list',
-    'access callback' => TRUE,
-    'weight' => 10
-  );
-
-
-  $items['drupal_task/migrate'] = array(
-    'title' => t('Migrate tweets to nodes'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('drupal_task_migrate_form'),
-    'access callback' => TRUE,
-    'expanded' => TRUE,
-    'weight' => 20
-  );
-
-  $items['tweets-list'] = array(
-    'title' => t('Tweets List'),
-    'access callback' => FALSE,
-    'expanded' => TRUE,
-    'weight' => 30
-  );
-
-  $items['drupal_task/get_drush_make_script'] = array(
-    'title' => t('Get drush make script'),
-    'access callback' => TRUE,
-    'expanded' => TRUE,
-    'weight' => 40
-  );
-
-  $items['drupal_task/get_installation_profile'] = array(
-    'title' => t('Get installation profile'),
-    'access callback' => TRUE,
-    'expanded' => TRUE,
-    'weight' => 50
-  );
-
-  $items['drupal_task/get_bash_script'] = array(
-    'title' => t('Get bash script'),
-    'access callback' => TRUE,
-    'expanded' => TRUE,
-    'weight' => 60
-  );
+    $items['drupal_task/tweet-list'] = array(
+        'title' => 'View current Tweet list',
+        'access callback' => TRUE,
+        'weight' => 10
+    );
 
 
-  return $items;
+    $items['drupal_task/migrate'] = array(
+        'title' => t('Migrate tweets to nodes'),
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('drupal_task_migrate_form'),
+        'access callback' => TRUE,
+        'expanded' => TRUE,
+        'weight' => 20
+    );
+
+    $items['tweets-list'] = array(
+        'title' => t('Tweets List'),
+        'access callback' => FALSE,
+        'expanded' => TRUE,
+        'weight' => 30
+    );
+
+    $items['drupal_task/get_drush_make_script'] = array(
+        'title' => t('Get drush make script'),
+        'access callback' => TRUE,
+        'expanded' => TRUE,
+        'weight' => 40
+    );
+
+    $items['drupal_task/get_installation_profile'] = array(
+        'title' => t('Get installation profile'),
+        'access callback' => TRUE,
+        'expanded' => TRUE,
+        'weight' => 50
+    );
+
+    $items['drupal_task/get_bash_script'] = array(
+        'title' => t('Get bash script'),
+        'access callback' => TRUE,
+        'expanded' => TRUE,
+        'weight' => 60
+    );
+
+
+    return $items;
 }
 
 function drupal_task_migrate_form() {
 
-  $form['description'] = array(
-    '#type' => 'markup',
-    '#markup' => t('Create a Batch to merge imported tweets into users and nodes<br/>')
-  );
+    $form['description'] = array(
+        '#type' => 'markup',
+        '#markup' => t('Create a Batch to merge imported tweets into users and nodes<br/>')
+    );
 
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => 'Start Merge'
-  );
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Start Merge'
+    );
 
 
-  return $form;
+    return $form;
 }
 
 function drupal_task_migrate_form_submit() {
-  $_SESSION['http_request_count'] = 0;
+    $_SESSION['http_request_count'] = 0;
 
 
-  $result = db_select('tweets', 't')
-    ->fields('t')
-    ->condition('t.merged', 0)
-    ->execute()
-    ->fetchAll();
+    $result = db_select('tweets', 't')
+        ->fields('t')
+        ->condition('t.merged', 0)
+        ->execute()
+        ->fetchAll();
 
-  $total_results = count($result);
-  if ($total_results > 0) {
+    $total_results = count($result);
+    if ($total_results > 0) {
 
 
-    foreach ($result as $data) {
-      $operations[] = array('drupal_task_merge_tweet', array($data));
+        foreach ($result as $data) {
+            $operations[] = array('drupal_task_merge_tweet', array($data));
+        }
+
+        drupal_set_message(t('There are ' . $total_results . ' tweets merged'));
+        $batch = array(
+            'operations' => $operations,
+            'finished' => 'drupal_task_merge_batch_finished',
+            'title' => 'Merge tweets',
+            'init_message' => 'Data initialization',
+            'progress_message' => 'Processing @current from @total.',
+            'error_message' => 'An error has occurred',
+        );
+        batch_set($batch);
     }
-
-    drupal_set_message(t('There are ' . $total_results . ' tweets merged'));
-    $batch = array(
-      'operations' => $operations,
-      'finished' => 'drupal_task_merge_batch_finished',
-      'title' => 'Merge tweets',
-      'init_message' => 'Data initialization',
-      'progress_message' => 'Processing @current from @total.',
-      'error_message' => 'An error has occurred',
-    );
-    batch_set($batch);
-  }
-  else {
-    drupal_set_message(t('No new tweets found'));
-  }
+    else {
+        drupal_set_message(t('No new tweets found'));
+    }
 
 }
 
 function drupal_task_merge_tweet($data) {
-  $existing_user = user_load_by_name($data->user_screen_name);
+    $existing_user = user_load_by_name($data->user_screen_name);
 
-  if (!$existing_user->uid) {
-    $avatar = explode("/", $data->profile_image_url);
-    $filename = end($avatar);
-    $image = file_get_contents($data->profile_image_url);
-    $file = file_save_data($image, 'public://' . $filename, FILE_EXISTS_RENAME);
+    if (!$existing_user->uid) {
+        $avatar = explode("/", $data->profile_image_url);
+        $filename = end($avatar);
+        $image = file_get_contents($data->profile_image_url);
+        $file = file_save_data($image, 'public://' . $filename, FILE_EXISTS_RENAME);
 
-    require_once DRUPAL_ROOT . '/' . variable_get('password_inc', 'includes/password.inc');
-    $account = new StdClass();
-    $account->is_new = TRUE;
-    $account->status = TRUE;
-    $account->name = $data->user_screen_name;
-    $account->pass = user_hash_password(mktime());
-    $account->mail = '';
-    $account->init = '';
-    $account->roles[2] = 'some role';
-    $account->picture = $file->fid;
+        require_once DRUPAL_ROOT . '/' . variable_get('password_inc', 'includes/password.inc');
+        $account = new StdClass();
+        $account->is_new = TRUE;
+        $account->status = TRUE;
+        $account->name = $data->user_screen_name;
+        $account->pass = user_hash_password(mktime());
+        $account->mail = '';
+        $account->init = '';
+        $account->roles[2] = 'some role';
+        $account->picture = $file->fid;
 
 
-    $existing_user = user_save($account);
+        $existing_user = user_save($account);
 
-    $context['results'][] = '<em>' . $data->user_screen_name . '</em>';
-    $context['message'] = 'Inserted user <em>' . $data->user_screen_name . '</em>';
-  }
+        $context['results'][] = '<em>' . $data->user_screen_name . '</em>';
+        $context['message'] = 'Inserted user <em>' . $data->user_screen_name . '</em>';
+    }
 
-  $node = new stdClass();
-  $node->type = 'twitter';
-  $node->status = 1;
-  $node->uid = $existing_user->uid;
-  $node->title = $data->text;
-  $node->promote = 1;
-  $node->created = $data->created_at;
-  $node->timestamp = $data->created_at;
-  $node->sticky = 0;
-  $node->language = 'en';
-  $node->body[LANGUAGE_NONE][0]['value'] = "@" . $data->user_screen_name . '<br/><img src="' . $data->profile_image_url . '"><br/>' . $data->text;
-  $node->body[LANGUAGE_NONE][0]['summary'] = '';
-  $node->body[LANGUAGE_NONE][0]['format'] = 'filtered_html';
-  $node->revision = 0;
-  node_save($node);
+    $node = new stdClass();
+    $node->type = 'twitter';
+    $node->status = 1;
+    $node->uid = $existing_user->uid;
+    $node->title = $data->text;
+    $node->promote = 1;
+    $node->created = $data->created_at;
+    $node->timestamp = $data->created_at;
+    $node->sticky = 0;
+    $node->language = 'en';
+    $node->body[LANGUAGE_NONE][0]['value'] = "@" . $data->user_screen_name . '<br/><img src="' . $data->profile_image_url . '"><br/>' . $data->text;
+    $node->body[LANGUAGE_NONE][0]['summary'] = '';
+    $node->body[LANGUAGE_NONE][0]['format'] = 'filtered_html';
+    $node->revision = 0;
+    node_save($node);
 
-  $context['results'][] = '<em>' . $data->id . '</em> by @' . $data->user_screen_name;
-  $context['message'] = 'Merged tweet <em>' . $data->id . '</em> by @' . $data->user_screen_name;
+    $context['results'][] = '<em>' . $data->id . '</em> by @' . $data->user_screen_name;
+    $context['message'] = 'Merged tweet <em>' . $data->id . '</em> by @' . $data->user_screen_name;
 
-  db_update('tweets')
-    ->fields(array('merged' => '1'))
-    ->condition('id', $data->id, '=')
-    ->execute();
+    db_update('tweets')
+        ->fields(array('merged' => '1'))
+        ->condition('id', $data->id, '=')
+        ->execute();
 
-  _drupal_task_update_http_requests();
+    _drupal_task_update_http_requests();
 }
 
 
@@ -196,18 +196,18 @@ function drupal_task_merge_tweet($data) {
  */
 function drupal_task_form() {
 
-  $form['description'] = array(
-    '#type' => 'markup',
-    '#markup' => t('Create a Batch to import tweets into a custom flat table in drupa<br/>')
-  );
+    $form['description'] = array(
+        '#type' => 'markup',
+        '#markup' => t('Create a Batch to import tweets into a custom flat table in drupa<br/>')
+    );
 
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => 'Start Import'
-  );
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Start Import'
+    );
 
 
-  return $form;
+    return $form;
 }
 
 
@@ -216,71 +216,71 @@ function drupal_task_form() {
  * @param $form_state
  */
 function drupal_task_form_submit($form, &$form_state) {
-  $_SESSION['http_request_count'] = 0;
+    $_SESSION['http_request_count'] = 0;
 
-  require_once(libraries_get_path("twitteroauth") . "/twitteroauth.php");
+    require_once(libraries_get_path("twitteroauth") . "/twitteroauth.php");
 
-  $query = db_select('tweets');
-  $query->addExpression('MAX(id)');
-  $max_id = $query->execute()->fetchField();
-  $since_id = (int) $max_id + 1;
+    $query = db_select('tweets');
+    $query->addExpression('MAX(id)');
+    $max_id = $query->execute()->fetchField();
+    $since_id = (int) $max_id + 1;
 
-  $query = 'drupal';
-  $twitter = new TwitterOAuth(CONSUMER_KEY,
-    CONSUMER_SECRET,
-    ACCESS_TOKEN,
-    ACCESS_TOKEN_SECRET);
-  $results = $twitter->get(
-    'search/tweets',
-    array(
-      "q" => $query,
-      "lang" => "en",
-      "count" => 100,
-      "include_entities" => TRUE,
-      "since_id" => $since_id
-    )
-  );
+    $query = 'drupal';
+    $twitter = new TwitterOAuth(CONSUMER_KEY,
+        CONSUMER_SECRET,
+        ACCESS_TOKEN,
+        ACCESS_TOKEN_SECRET);
+    $results = $twitter->get(
+        'search/tweets',
+        array(
+            "q" => $query,
+            "lang" => "en",
+            "count" => 100,
+            "include_entities" => TRUE,
+            "since_id" => $since_id
+        )
+    );
 
-  $total_results = 0;
-  if (isset($results->statuses)) {
-    $total_results = count($results->statuses);
+    $total_results = 0;
+    if (isset($results->statuses)) {
+        $total_results = count($results->statuses);
 
-    $operations = array();
-    foreach ($results->statuses as $result) {
+        $operations = array();
+        foreach ($results->statuses as $result) {
 
-      $date = new DateTime($result->created_at);
-      $result->created_at = $date->format('U');
+            $date = new DateTime($result->created_at);
+            $result->created_at = $date->format('U');
 
-      $fields = array(
-        'id' => $result->id,
-        'text' => utf8_encode($result->text),
-        'created_at' => $result->created_at,
-        'user_id' => $result->user->id,
-        'user_name' => $result->user->name,
-        'user_screen_name' => $result->user->screen_name,
-        'profile_image_url' => $result->user->profile_image_url
-      );
-      $operations[] = array('drupal_task_insert_tweet', array($fields));
+            $fields = array(
+                'id' => $result->id,
+                'text' => utf8_encode($result->text),
+                'created_at' => $result->created_at,
+                'user_id' => $result->user->id,
+                'user_name' => $result->user->name,
+                'user_screen_name' => $result->user->screen_name,
+                'profile_image_url' => $result->user->profile_image_url
+            );
+            $operations[] = array('drupal_task_insert_tweet', array($fields));
+        }
+
+        if ($total_results > 0) {
+            drupal_set_message(t('There are ' . $total_results . ' new tweets found'));
+            $batch = array(
+                'operations' => $operations,
+                'finished' => 'drupal_task_batch_finished',
+                'title' => 'Import tweets',
+                'init_message' => 'Data initialization',
+                'progress_message' => 'Processing @current from @total.',
+                'error_message' => 'An error has occurred',
+            );
+            batch_set($batch);
+        }
+
     }
 
-    if ($total_results > 0) {
-      drupal_set_message(t('There are ' . $total_results . ' new tweets found'));
-      $batch = array(
-        'operations' => $operations,
-        'finished' => 'drupal_task_batch_finished',
-        'title' => 'Import tweets',
-        'init_message' => 'Data initialization',
-        'progress_message' => 'Processing @current from @total.',
-        'error_message' => 'An error has occurred',
-      );
-      batch_set($batch);
+    if ($total_results == 0) {
+        drupal_set_message(t('No new tweets found'));
     }
-
-  }
-
-  if ($total_results == 0) {
-    drupal_set_message(t('No new tweets found'));
-  }
 
 }
 
@@ -290,14 +290,14 @@ function drupal_task_form_submit($form, &$form_state) {
  */
 function drupal_task_insert_tweet($data, &$context) {
 
-  db_insert('tweets')
-    ->fields($data)
-    ->execute();
+    db_insert('tweets')
+        ->fields($data)
+        ->execute();
 
-  $context['results'][] = '<em>' . $data["id"] . '</em> by @' . $data["user_name"];
-  $context['message'] = 'Inserted tweet <em>' . $data["id"] . '</em> by @' . $data["user_name"];
+    $context['results'][] = '<em>' . $data["id"] . '</em> by @' . $data["user_name"];
+    $context['message'] = 'Inserted tweet <em>' . $data["id"] . '</em> by @' . $data["user_name"];
 
-  _drupal_task_update_http_requests();
+    _drupal_task_update_http_requests();
 
 }
 
@@ -305,7 +305,7 @@ function drupal_task_insert_tweet($data, &$context) {
  * Utility function to increment HTTP requests in a session variable.
  */
 function _drupal_task_update_http_requests() {
-  $_SESSION['http_request_count']++;
+    $_SESSION['http_request_count']++;
 }
 
 /**
@@ -314,7 +314,7 @@ function _drupal_task_update_http_requests() {
  *   Number of requests.
  */
 function _drupal_task_get_http_requests() {
-  return !empty($_SESSION['http_request_count']) ? $_SESSION['http_request_count'] : 0;
+    return !empty($_SESSION['http_request_count']) ? $_SESSION['http_request_count'] : 0;
 }
 
 
@@ -325,15 +325,15 @@ function _drupal_task_get_http_requests() {
  * @param $operations
  */
 function drupal_task_batch_finished($success, $results, $operations) {
-  if ($success) {
-    drupal_set_message(t('@count results processed in @requests HTTP requests.', array(
-      '@count' => count($results),
-      '@requests' => drupal_task_get_http_requests()
-    )));
-  }
-  else {
-    drupal_set_message('An error has occurred', 'error');
-  }
+    if ($success) {
+        drupal_set_message(t('@count results processed in @requests HTTP requests.', array(
+            '@count' => count($results),
+            '@requests' => drupal_task_get_http_requests()
+        )));
+    }
+    else {
+        drupal_set_message('An error has occurred', 'error');
+    }
 }
 
 /**
@@ -343,7 +343,7 @@ function drupal_task_batch_finished($success, $results, $operations) {
  *   Number of requests.
  */
 function drupal_task_get_http_requests() {
-  return !empty($_SESSION['http_request_count']) ? $_SESSION['http_request_count'] : 0;
+    return !empty($_SESSION['http_request_count']) ? $_SESSION['http_request_count'] : 0;
 }
 
 /**
@@ -355,26 +355,26 @@ function drupal_task_get_http_requests() {
  * A basic introduction page for the drupal_task module.
  */
 function drupal_task_intro() {
-  variable_set('user_picture_style', 'twitter_avatar');
-  $markup = t('Create a Batch to import tweets into a custom flat table in drupal (module 1)<br/>
+    variable_set('user_picture_style', 'twitter_avatar');
+    $markup = t('Create a Batch to import tweets into a custom flat table in drupal (module 1)<br/>
                  Create a feature module containing Tweet content type and a View with list of tweets (feature 1)<br/>
                  Create a migration class to migrate tweets from a flat table into users and nodes (Migrate + module 2)<br/>
                  Create a drush make script for downloading all required modules<br/>
                  Wrap everything into an installation profile<br/>
                  Create a bash script for site installation. It should 1) run drush make 2) create db 3) install profile<br/>');
 
-  $list[] = l(t('Import tweets with "drupal" keyword '), 'drupal_task/import_tweets');
-  $list[] = l(t('Migrate tweets to nodes'), 'drupal_task/migrate');
-  $list[] = l(t('View current Tweet list'), 'drupal_task/tweet-list');
-  $list[] = l(t('Get drush make script'), 'drupal_task/get_drush_make_script');
-  $list[] = l(t('Get installation profile'), 'drupal_task/get_installation_profile');
-  $list[] = l(t('Get bash script'), 'drupal_task/get_bash_script');
+    $list[] = l(t('Import tweets with "drupal" keyword '), 'drupal_task/import_tweets');
+    $list[] = l(t('Migrate tweets to nodes'), 'drupal_task/migrate');
+    $list[] = l(t('View current Tweet list'), 'drupal_task/tweet-list');
+    $list[] = l(t('Get drush make script'), 'drupal_task/get_drush_make_script');
+    $list[] = l(t('Get installation profile'), 'drupal_task/get_installation_profile');
+    $list[] = l(t('Get bash script'), 'drupal_task/get_bash_script');
 
-  $variables['items'] = $list;
-  $variables['type'] = 'ul';
-  $markup .= theme('item_list', $variables);
+    $variables['items'] = $list;
+    $variables['type'] = 'ul';
+    $markup .= theme('item_list', $variables);
 
-  return $markup;
+    return $markup;
 }
 
 /**
@@ -382,18 +382,18 @@ function drupal_task_intro() {
  * @return array
  */
 function drupal_task_image_default_styles() {
-  $styles = array();
-  $styles['twitter_avatar'] = array();
-  $styles['twitter_avatar']['effects'] = array(
-    array(
-      'name' => 'image_scale',
-      'data' => array(
-        'width' => 48,
-        'height' => 48,
-        'upscale' => 1,
-      ),
-      'weight' => 0,
-    )
-  );
-  return $styles;
+    $styles = array();
+    $styles['twitter_avatar'] = array();
+    $styles['twitter_avatar']['effects'] = array(
+        array(
+            'name' => 'image_scale',
+            'data' => array(
+                'width' => 48,
+                'height' => 48,
+                'upscale' => 1,
+            ),
+            'weight' => 0,
+        )
+    );
+    return $styles;
 }

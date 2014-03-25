@@ -9,105 +9,105 @@
  * Implements hook_schema().
  */
 function drupal_task_schema() {
-  $schema['tweets'] = array(
-    'description' => 'Flat Tweets Table',
-    'fields' => array(
-      'id' => array(
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'description' => 'Tweet id',
-        'primary key' => TRUE,
-        'size' => 'big'
-      ),
-      'text' => array(
-        'type' => 'text',
-        'not null' => FALSE,
-        'description' => 'Tweet body',
-      ),
-      'created_at' => array(
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-        'description' => 'Created date',
-      ),
-      'user_id' => array(
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-        'description' => 'Tweet user id',
-        'size' => 'big'
-      ),
-      'user_name' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'default' => '',
-        'length' => 100,
-        'description' => 'User name',
-      ),
-      'user_screen_name' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'default' => '',
-        'length' => 100,
-        'description' => 'User nickname',
-      ),
-      'profile_image_url' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'default' => '',
-        'length' => 1024,
-        'description' => 'User avatar link',
-      ),
-      'merged' => array(
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-        'description' => 'merged flag',
-        'size' => 'tiny'
-      )
+    $schema['tweets'] = array(
+        'description' => 'Flat Tweets Table',
+        'fields' => array(
+            'id' => array(
+                'type' => 'serial',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+                'description' => 'Tweet id',
+                'primary key' => TRUE,
+                'size' => 'big'
+            ),
+            'text' => array(
+                'type' => 'text',
+                'not null' => FALSE,
+                'description' => 'Tweet body',
+            ),
+            'created_at' => array(
+                'type' => 'int',
+                'not null' => FALSE,
+                'default' => 0,
+                'description' => 'Created date',
+            ),
+            'user_id' => array(
+                'type' => 'int',
+                'not null' => FALSE,
+                'default' => 0,
+                'description' => 'Tweet user id',
+                'size' => 'big'
+            ),
+            'user_name' => array(
+                'type' => 'varchar',
+                'not null' => FALSE,
+                'default' => '',
+                'length' => 100,
+                'description' => 'User name',
+            ),
+            'user_screen_name' => array(
+                'type' => 'varchar',
+                'not null' => FALSE,
+                'default' => '',
+                'length' => 100,
+                'description' => 'User nickname',
+            ),
+            'profile_image_url' => array(
+                'type' => 'varchar',
+                'not null' => FALSE,
+                'default' => '',
+                'length' => 1024,
+                'description' => 'User avatar link',
+            ),
+            'merged' => array(
+                'type' => 'int',
+                'not null' => FALSE,
+                'default' => 0,
+                'description' => 'merged flag',
+                'size' => 'tiny'
+            )
 
-    ),
-    'primary key' => array('id'),
-    'indexes' => array(
-      'user_id' => array('user_id')
-    )
-  );
-  return $schema;
+        ),
+        'primary key' => array('id'),
+        'indexes' => array(
+            'user_id' => array('user_id')
+        )
+    );
+    return $schema;
 }
 
 /**
  * Add the new tweets table.
  */
 function drupal_task_update_7112() {
-  if (!db_table_exists('tweets')) {
-    $schema = drupal_task_schema();
-    db_create_table('tweets', $schema['tweets']);
-    return st('Created table tweets');
-  }
-  drupal_task_add_new_content_type();
+    if (!db_table_exists('tweets')) {
+        $schema = drupal_task_schema();
+        db_create_table('tweets', $schema['tweets']);
+        return st('Created table tweets');
+    }
+    drupal_task_add_new_content_type();
 }
 
 function drupal_task_add_new_content_type() {
-  node_types_rebuild();
-  $types = node_type_get_types();
+    node_types_rebuild();
+    $types = node_type_get_types();
 
-  if (!array_key_exists('twitter', $types)) {
-    $node_example = array(
-      'type' => 'twitter',
-      'name' => t('Twitter'),
-      'base' => 'node_content',
-      'description' => t('Twitter Content Type')
-    );
-    $content_type = node_type_set_defaults($node_example);
-    node_add_body_field($content_type);
-    node_type_save($content_type);
-  }
+    if (!array_key_exists('twitter', $types)) {
+        $node_example = array(
+            'type' => 'twitter',
+            'name' => t('Twitter'),
+            'base' => 'node_content',
+            'description' => t('Twitter Content Type')
+        );
+        $content_type = node_type_set_defaults($node_example);
+        node_add_body_field($content_type);
+        node_type_save($content_type);
+    }
 
 
 }
 
 function drupal_task_install() {
-  drupal_task_add_new_content_type();
+    drupal_task_add_new_content_type();
 }
 
