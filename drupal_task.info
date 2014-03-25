@@ -1,0 +1,9 @@
+name = Drupal Task
+description = Test Drupal Task
+core = 7.x
+
+dependencies[] = views
+dependencies[] = features
+dependencies[] = libraries
+files[] = drupal_task.install
+files[] = drupal_task.module
