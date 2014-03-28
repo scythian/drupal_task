@@ -19,6 +19,7 @@ define('ACCESS_TOKEN_SECRET', '2UeQDVZMEo0IRKJ4SU83qzVqAIhV458ChYX9QiPYs0BHu');
  * Implements hook_menu().
  */
 function drupal_task_menu() {
+
     $items = array();
 
     $items['drupal_task'] = array(
@@ -58,6 +59,13 @@ function drupal_task_menu() {
         'access callback' => FALSE,
         'expanded' => TRUE,
         'weight' => 30
+    );
+
+    $items['vbo-twitter'] = array(
+        'title' => 'VBO for tweets',
+        'access callback' => FALSE,
+        'expanded' => TRUE,
+        'weight' => 31
     );
 
 
@@ -123,7 +131,10 @@ function drupal_task_merge_tweet($data) {
         $avatar = explode("/", $data->profile_image_url);
         $filename = end($avatar);
         $image = file_get_contents($data->profile_image_url);
-        $file = file_save_data($image, 'public://' . $filename, FILE_EXISTS_RENAME);
+        $path='public://twitter-icons';
+        if(file_prepare_directory($path,FILE_CREATE_DIRECTORY)){
+            $file = file_save_data($image,  $path."/". $filename, FILE_EXISTS_RENAME);
+        }
 
         require_once DRUPAL_ROOT . '/' . variable_get('password_inc', 'includes/password.inc');
         $account = new stdClass();
@@ -335,6 +346,7 @@ function drupal_task_get_http_requests() {
  * A basic introduction page for the drupal_task module.
  */
 function drupal_task_intro() {
+
     variable_set('user_picture_style', 'twitter_avatar');
     $markup = t('Create a Batch to import tweets into a custom flat table in drupal (module 1)<br/>
                  Create a feature module containing Tweet content type and a View with list of tweets (feature 1)<br/>
@@ -346,6 +358,7 @@ function drupal_task_intro() {
     $list[] = l(t('Import tweets with "drupal" keyword'), 'drupal_task/import_tweets');
     $list[] = l(t('Migrate tweets to nodes'), 'drupal_task/migrate');
     $list[] = l(t('View current Tweet list'), 'drupal_task/tweet-list');
+    $list[] = l(t('VBO for tweets'), 'vbo-twitter');
 
     $variables['items'] = $list;
     $variables['type'] = 'ul';
