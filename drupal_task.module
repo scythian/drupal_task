@@ -107,7 +107,7 @@ function drupal_task_migrate_form_submit() {
         }
 
 
-        drupal_set_message(t('There are @total_results tweets merged'), array('@total_results' => $total_results));
+        drupal_set_message(t('There are %total_results tweets merged'), array('%total_results' => $total_results));
         $batch = array(
             'operations' => $operations,
             'finished' => 'drupal_task_merge_batch_finished',
@@ -131,9 +131,9 @@ function drupal_task_merge_tweet($data) {
         $avatar = explode("/", $data->profile_image_url);
         $filename = end($avatar);
         $image = file_get_contents($data->profile_image_url);
-        $path='public://twitter-icons';
-        if(file_prepare_directory($path,FILE_CREATE_DIRECTORY)){
-            $file = file_save_data($image,  $path."/". $filename, FILE_EXISTS_RENAME);
+        $path = 'public://twitter-icons';
+        if (file_prepare_directory($path, FILE_CREATE_DIRECTORY)) {
+            $file = file_save_data($image, $path . "/" . $filename, FILE_EXISTS_RENAME);
         }
 
         require_once DRUPAL_ROOT . '/' . variable_get('password_inc', 'includes/password.inc');
@@ -145,7 +145,9 @@ function drupal_task_merge_tweet($data) {
         $account->mail = '';
         $account->init = '';
         $account->roles[2] = 'some role';
-        $account->picture = $file->fid;
+        if ($file) {
+            $account->picture = $file->fid;
+        }
 
 
         $existing_user = user_save($account);
