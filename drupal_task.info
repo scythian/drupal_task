@@ -4,6 +4,7 @@ core = 7.x
 
 dependencies[] = views
 dependencies[] = features
-dependencies[] = libraries
+dependencies[] = autoload
 files[] = drupal_task.install
 files[] = drupal_task.module
+

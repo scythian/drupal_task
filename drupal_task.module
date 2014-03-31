@@ -211,8 +211,6 @@ function drupal_task_form() {
 function drupal_task_form_submit($form, &$form_state) {
     $_SESSION['http_request_count'] = 0;
 
-    require_once(libraries_get_path("twitteroauth") . "/twitteroauth.php");
-
     $query = db_select('tweets');
     $query->addExpression('MAX(id)');
     $max_id = $query->execute()->fetchField();
